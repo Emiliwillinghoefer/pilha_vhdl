@@ -14,8 +14,9 @@ end entity;
 architecture principal of pilha is
 	type DATA_ARRAY is array (integer range <>) of std_logic_vector(0 to 7);
 	signal DATA: DATA_ARRAY (0 to 7);
+	signal aux_ptr: DATA_ARRAY (0 to 8);
 	SIGNAL estado : INTEGER RANGE 3 DOWNTO 0;
-	SIGNAL aux_ptr: INTEGER RANGE 0 TO 8;
+	--SIGNAL aux_ptr: INTEGER RANGE 0 TO 8;
 	
 BEGIN
 	PROCESS (CLK, RESET)
@@ -30,7 +31,8 @@ BEGIN
 			ELSIF (CLK'EVENT and CLK ='1') THEN -- ciclo de estados
 				CASE estado IS
 							
-					WHEN 0 => -- INTERMEDIARIO	
+					WHEN 0 => -- INTERMEDIARIO
+						DATA_OUT <= DATA(PTR);
 						IF PUSH = '1' THEN 
 							estado <= 1;
 						ELSIF POP = '1' THEN 
@@ -38,24 +40,26 @@ BEGIN
 						else estado<=0;
 						END IF;
 
-					WHEN 1 => -- Estado de Push						
+					WHEN 1 => -- Estado de Push
 						IF PTR /= 7 THEN
 							DATA(PTR) <= DATA_IN;
+							DATA_OUT <= DATA(PTR);
 							PTR := (PTR+1);
 							estado <= 3;
 						ELSE estado <= 0;
 						END IF;
 						
-					WHEN 2 => -- Estado de Pop	
+					WHEN 2 => -- Estado de Pop
 						IF PTR /= 0 THEN
 							PTR := (PTR-1);
 							estado <= 3;
 						ELSIF PTR = 0 THEN 
 							DATA(PTR) <= (others => '0');
+							estado <= 0;
 						ELSE estado <= 0;
 						END IF;
 						
-					WHEN 3 => 	
+					WHEN 3 => --Estado de espera	
 						IF PUSH = '1' THEN	
 							estado <= 3;
 						ELSIF POP = '1' THEN
@@ -66,7 +70,8 @@ BEGIN
 		
 				END CASE;
 			END IF;
-			DATA_OUT <= DATA(PTR);
+			--aux_ptr <= PTR;
+			--DATA_OUT <= DATA(PTR);
 		END PROCESS;
-		--DATA_OUT <= DATA(aux_ptr);
+		DATA_OUT <= DATA(aux_ptr);
 end architecture;
